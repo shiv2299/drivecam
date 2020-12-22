@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "845417875118",
+    "firebase_url": "https://drivecam-75415.firebaseio.com",
+    "project_id": "drivecam-75415",
+    "storage_bucket": "drivecam-75415.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:845417875118:android:95812597749d04bc7e8f3f",
+        "android_client_info": {
+          "package_name": "com.example.drivecam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "845417875118-8n4mce964tlkjj07ovv5ukjqumuenhbi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbQwudtTN1QoyfdteOgxvYeyuxQhM6rs0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "845417875118-8n4mce964tlkjj07ovv5ukjqumuenhbi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

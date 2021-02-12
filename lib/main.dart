@@ -1,4 +1,4 @@
-import 'package:drivecam/routes/router.dart';
+import 'package:drivecam/routes/router.dart' as route;
 import 'package:drivecam/screens/splash_screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Drive Cam',
       theme: ThemeData(
         primarySwatch: AppColors.primaryColor,
         cursorColor: AppColors.primaryColor,
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SplashScreen(),
-      onGenerateRoute: Router.generateRoute,
+      onGenerateRoute: route.Router.generateRoute,
     );
   }
 }

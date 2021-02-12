@@ -1,8 +1,11 @@
 import 'package:drivecam/resources/colors.dart';
 import 'package:drivecam/widgets/elevated_button.dart';
 import 'package:drivecam/widgets/submit_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -65,7 +68,6 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 //    getData();
   }
@@ -88,7 +90,14 @@ class _HomeState extends State<Home> {
                       color: AppColors.primaryColor,
                       size: 40,
                     ),
-                    onTap: () {},
+                    onTap: () async {
+                      SharedPreferences pref =
+                          await SharedPreferences.getInstance();
+                      pref.clear();
+                      await FirebaseAuth.instance.signOut();
+                      await GoogleSignIn().signOut();
+                      Navigator.of(context).pushReplacementNamed('/login');
+                    },
                   ),
                   GestureDetector(
                     child: Icon(
@@ -178,7 +187,7 @@ class _HomeState extends State<Home> {
                               EdgeInsets.only(left: 5, right: 5, bottom: 15),
                           child: SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(() {}, "Request Code"),
+                            child: CustomElevatedButton(() {}, "Request Code"),
                           ),
                         ),
                       ],

@@ -1,77 +1,58 @@
+import 'package:drivecam/models/user_model.dart';
 import 'package:drivecam/widgets/submit_button.dart';
 import 'package:flutter/material.dart';
 
 class Register extends StatefulWidget {
+  Map<String, dynamic> data;
+
+  Register(this.data);
+
   @override
   _RegisterState createState() => _RegisterState();
 }
 
 class _RegisterState extends State<Register> {
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _bloodGroupController = TextEditingController();
-  final _kinController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  TextEditingController _firstNameController;
+  TextEditingController _lastNameController;
+  TextEditingController _bloodGroupController;
+  TextEditingController _kinController;
+  TextEditingController _usernameController;
+  TextEditingController _passwordController;
   final _formKey = GlobalKey<FormState>();
+  bool editable = true;
   register() async {
-    Navigator.of(context).pushReplacementNamed("/login");
-//    if (_formKey.currentState.validate()) {
-//      BuildContext loadContext;
-//      showDialog(
-//          context: context,
-//          builder: (ctx) {
-//            loadContext = ctx;
-//            return LoadingDialog("Creating account please wait..");
-//          },
-//          barrierDismissible: false);
-//      try {
-//        String firstName = _firstNameController.text.trim();
-//        String lastName = _lastNameController.text.trim();
-//        String bloodGroup = _bloodGroupController.text.trim();
-//        String kinName = _kinController.text.trim();
-//        String username = _usernameController.text.trim();
-//        String password = _passwordController.text.trim();
-//        var data = FormData.fromMap({
-//          "first_name": firstName,
-//          "last_name": lastName,
-//          "blood_group": bloodGroup,
-//          "kin_name": kinName,
-//          "username": username,
-//          "password": password
-//        });
-//        Dio dio = Dio();
-//        Response response =
-//            await dio.post(URL.url + "register.php", data: data);
-//        if (response.statusCode == 200) {
-//          if (json.decode(response.data)["status"]) {
-//            Navigator.pop(loadContext);
-//            Navigator.of(context).pushReplacementNamed("/login");
-//          } else {
-//            Navigator.pop(loadContext);
-//            showDialog(
-//                context: context,
-//                builder: (ctx) {
-//                  return ShowAlert("Error Creating Account!",
-//                      json.decode(response.data)["message"]);
-//                });
-//          }
-//        } else {
-//          Navigator.pop(loadContext);
-//          FlutterToast(context).showToast(
-//              child: Text("Something went wrong!"),
-//              gravity: ToastGravity.BOTTOM,
-//              toastDuration: Duration(seconds: 2));
-//        }
-//      } catch (e) {
-//        print(e);
-//        Navigator.pop(loadContext);
-//        FlutterToast(context).showToast(
-//            child: Text("Something went wrong!"),
-//            gravity: ToastGravity.BOTTOM,
-//            toastDuration: Duration(seconds: 2));
-//      }
-//    }
+    User user = User(
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      bloodGroup: _bloodGroupController.text.trim(),
+      kinName: _kinController.text.trim(),
+      username: _usernameController.text.trim(),
+      password: _passwordController.text.trim(),
+      faceData: "",
+    );
+    if (_formKey.currentState.validate()) {
+      Navigator.of(context).pushReplacementNamed("/registerFace", arguments: {
+        "user": user,
+        "cd": widget.data["cd"],
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.data.containsKey("user")) {
+      editable = false;
+    }
+    _firstNameController = TextEditingController(
+        text: editable ? "" : widget.data["user"].displayName.split(" ")[0]);
+    _lastNameController = TextEditingController(
+        text: editable ? "" : widget.data["user"].displayName.split(" ").last);
+    _bloodGroupController = TextEditingController();
+    _kinController = TextEditingController();
+    _usernameController =
+        TextEditingController(text: editable ? "" : widget.data["user"].email);
+    _passwordController = TextEditingController();
   }
 
   @override
@@ -97,6 +78,7 @@ class _RegisterState extends State<Register> {
                   TextFormField(
                     controller: _firstNameController,
                     decoration: InputDecoration(hintText: "First Name"),
+                    enabled: editable,
                     validator: (value) {
                       if (value.isEmpty) {
                         return "Enter first name";
@@ -108,6 +90,7 @@ class _RegisterState extends State<Register> {
                   TextFormField(
                     controller: _lastNameController,
                     decoration: InputDecoration(hintText: "Last Name"),
+                    enabled: editable,
                     validator: (value) {
                       if (value.isEmpty) {
                         return "Enter last name";
@@ -147,6 +130,7 @@ class _RegisterState extends State<Register> {
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(hintText: "Username"),
+                    enabled: editable,
                     validator: (value) {
                       if (value.isEmpty) {
                         return "Enter username";

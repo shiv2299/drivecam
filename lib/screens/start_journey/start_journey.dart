@@ -42,22 +42,13 @@ class _StartJourneyState extends State<StartJourney> {
       double left = face.leftEyeOpenProbability;
       double right = face.rightEyeOpenProbability;
       if (left <= 0.4 || right <= 0.4) {
-        print("!!!!!!!!!!!!!!!!!!!!!REEWRASD!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
         print("LEFT" + face.leftEyeOpenProbability.toString());
         print("RIGHT" + face.leftEyeOpenProbability.toString());
         player.play(alarmAudioPath);
-        FlutterToast(context).showToast(
-            child: Container(
-                color: Colors.red,
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  "Eyes Closing",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white),
-                )),
-            gravity: ToastGravity.BOTTOM,
-            toastDuration: Duration(seconds: 2));
+        Fluttertoast.showToast(
+            msg: "Eyes Closing",
+            textColor: Colors.white,
+            backgroundColor: Colors.red);
       } else {
 //        player.fixedPlayer.stop();
       }

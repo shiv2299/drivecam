@@ -51,7 +51,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         child: Center(
                             child: SizedBox(
                                 width: double.infinity,
-                                child: ElevatedButton(
+                                child: CustomElevatedButton(
                                     () {}, "Initiate Verification"))),
                       ),
                       SizedBox(

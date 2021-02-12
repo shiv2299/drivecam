@@ -1,66 +1,48 @@
-import 'dart:convert';
-
 class User {
   User({
-    this.status,
-    this.message,
-    this.data,
-  });
-
-  bool status;
-  String message;
-  UserData data;
-
-  factory User.fromRawJson(String str) => User.fromJson(json.decode(str));
-
-  factory User.fromJson(Map<String, dynamic> json) => User(
-        status: json["status"],
-        message: json["message"],
-        data: json["status"] ? UserData.fromJson(json["data"]) : null,
-      );
-}
-
-class UserData {
-  UserData({
     this.id,
+    this.faceData,
     this.firstName,
     this.lastName,
     this.bloodGroup,
     this.kinName,
-    this.unitCode,
-    this.role,
     this.username,
     this.password,
-    this.isActive,
     this.createdAt,
+    this.updatedAt,
   });
 
-  dynamic id;
-  dynamic firstName;
-  dynamic lastName;
-  dynamic bloodGroup;
-  dynamic kinName;
-  dynamic unitCode;
-  dynamic role;
-  dynamic username;
-  dynamic password;
-  dynamic isActive;
-  DateTime createdAt;
+  String id;
+  String faceData;
+  String firstName;
+  String lastName;
+  String bloodGroup;
+  String kinName;
+  String username;
+  String password;
+  String createdAt;
+  String updatedAt;
 
-  factory UserData.fromRawJson(String str) =>
-      UserData.fromJson(json.decode(str));
-
-  factory UserData.fromJson(Map<String, dynamic> json) => UserData(
-        id: json["id"],
+  factory User.fromJson(Map<String, dynamic> json) => User(
+        id: json["_id"],
+        faceData: json["face_data"],
         firstName: json["first_name"],
         lastName: json["last_name"],
         bloodGroup: json["blood_group"],
         kinName: json["kin_name"],
-        unitCode: json["unit_code"],
-        role: json["role"],
         username: json["username"],
         password: json["password"],
-        isActive: json["is_active"],
-        createdAt: DateTime.parse(json["created_at"]),
+        createdAt: json["created_at"],
+        updatedAt: json["updated_at"],
       );
+
+  Map<String, dynamic> toJson() => {
+        "face_data": faceData,
+        "first_name": firstName,
+        "last_name": lastName,
+        "blood_group": bloodGroup,
+        "kin_name": kinName,
+        "username": username,
+        "password": password,
+      };
 }

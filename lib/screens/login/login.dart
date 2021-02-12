@@ -1,6 +1,17 @@
+import 'package:camera/camera.dart';
+import 'package:dio/dio.dart';
+import 'package:drivecam/db/database.dart';
+import 'package:drivecam/services/facenet.service.dart';
+import 'package:drivecam/services/ml_vision_service.dart';
+import 'package:drivecam/services/user_api.dart';
 import 'package:drivecam/widgets/elevated_button.dart';
+import 'package:drivecam/widgets/loading_dialog.dart';
 import 'package:drivecam/widgets/submit_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:local_auth/local_auth.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -11,58 +22,97 @@ class _LoginState extends State<Login> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
+  final LocalAuthentication auth = LocalAuthentication();
+  FaceNetService _faceNetService = FaceNetService();
+  MLVisionService _mlVisionService = MLVisionService();
+  DataBaseService _dataBaseService = DataBaseService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  FirebaseUser _user;
+  CameraDescription cameraDescription;
   login() async {
-    Navigator.of(context).pushReplacementNamed('/home');
-//    if (_formKey.currentState.validate()) {
-//      BuildContext loadContext;
-//      showDialog(
-//          context: context,
-//          builder: (ctx) {
-//            loadContext = ctx;
-//            return LoadingDialog("Logging in please wait..");
-//          },
-//          barrierDismissible: false);
-//      try {
-//        String username = _usernameController.text.trim();
-//        String password = _passwordController.text.trim();
-//        Dio dio = Dio();
-//        var data =
-//            FormData.fromMap({"username": username, "password": password});
-//        Response response = await dio.post(URL.url + "login.php", data: data);
-//        print(response.data);
-//        if (response.statusCode == 200) {
-//          User user = User.fromRawJson(response.data);
-//          if (user.status) {
-//            Navigator.pop(loadContext);
-//            SharedPreferences pref = await SharedPreferences.getInstance();
-//            pref.setBool("isLoggedIn", true);
-//            pref.setString("id", user.data.id);
-//            Navigator.of(context).pushReplacementNamed('/home');
-//          } else {
-//            Navigator.pop(loadContext);
-//            showDialog(
-//                context: context,
-//                builder: (ctx) {
-//                  return ShowAlert("Error Logging in!", user.message);
-//                });
-//          }
-//        } else {
-//          Navigator.pop(loadContext);
-//          FlutterToast(context).showToast(
-//              child: Text("Something went wrong!"),
-//              gravity: ToastGravity.BOTTOM,
-//              toastDuration: Duration(seconds: 2));
-//        }
-//      } catch (e) {
-//        print(e);
-//        Navigator.pop(loadContext);
-//        FlutterToast(context).showToast(
-//            child: Text("Something went wrong!"),
-//            gravity: ToastGravity.BOTTOM,
-//            toastDuration: Duration(seconds: 2));
-//      }
-//    }
+    if (_formKey.currentState.validate()) {
+      BuildContext loadContext;
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            loadContext = ctx;
+            return LoadingDialog("Logging in please wait..");
+          },
+          barrierDismissible: false);
+      UserApi userApi = UserApi();
+      String username = _usernameController.text.trim();
+      String password = _passwordController.text.trim();
+      try {
+        Response response = await userApi.login(username, password);
+        if (response.data["status"]) {
+          String id = response.data["data"][0]["_id"];
+          userApi.storeUserId(id);
+          Navigator.pop(loadContext);
+          Navigator.of(context).pushReplacementNamed("/home");
+        } else {
+          Navigator.pop(loadContext);
+          Fluttertoast.showToast(msg: response.data["messages"]);
+        }
+      } catch (e) {
+        print(e);
+        Fluttertoast.showToast(msg: "Something Went Wrong!");
+      }
+    }
+  }
+
+  void signInWithGoogle(context) async {
+    GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
+    if (googleSignInAccount != null) {
+      GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
+      AuthCredential credential = GoogleAuthProvider.getCredential(
+        accessToken: googleSignInAuthentication.accessToken,
+        idToken: googleSignInAuthentication.idToken,
+      );
+      AuthResult result = await _auth.signInWithCredential(credential);
+      _user = result.user;
+      assert(!_user.isAnonymous);
+      assert(await _user.getIdToken() != null);
+      FirebaseUser currentUser = await _auth.currentUser();
+      assert(_user.uid == currentUser.uid);
+      try {
+        UserApi userApi = UserApi();
+        Response response = await userApi.getUserByEmail(currentUser.email);
+        print(response.data);
+        if (response.data["status"]) {
+          userApi.storeUserId(response.data["data"]["_id"]);
+          Navigator.of(context).pushReplacementNamed("/home");
+        } else {
+          Navigator.of(context).pushNamed("/register",
+              arguments: {"cd": cameraDescription, "user": currentUser});
+        }
+      } catch (e) {
+        print(e);
+        Fluttertoast.showToast(msg: "Something Went Wrong!");
+      }
+    }
+  }
+
+  _startUp() async {
+    List<CameraDescription> cameras = await availableCameras();
+
+    /// takes the front camera
+    cameraDescription = cameras.firstWhere(
+      (CameraDescription camera) =>
+          camera.lensDirection == CameraLensDirection.front,
+    );
+
+    // start the services
+    await _faceNetService.loadModel();
+    await _dataBaseService.loadDB();
+    _mlVisionService.initialize();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startUp();
   }
 
   @override
@@ -160,7 +210,8 @@ class _LoginState extends State<Login> {
                                   style: Theme.of(context).textTheme.bodyText1,
                                 ),
                                 onTap: () {
-                                  Navigator.of(context).pushNamed("/register");
+                                  Navigator.of(context).pushNamed("/register",
+                                      arguments: {"cd": cameraDescription});
                                 },
                               ),
                               GestureDetector(
@@ -186,6 +237,21 @@ class _LoginState extends State<Login> {
                             ),
                           ),
                         ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(right: 10, left: 10),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: SubmitButton(
+                              () {
+                                signInWithGoogle(context);
+                              },
+                              "Sign in with Google",
+                            ),
+                          ),
+                        ),
                         Container(
                           margin: EdgeInsets.only(bottom: 15, top: 15),
                           child: Text(
@@ -198,9 +264,10 @@ class _LoginState extends State<Login> {
                               EdgeInsets.only(bottom: 20, right: 10, left: 10),
                           child: SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
+                            child: CustomElevatedButton(
                               () {
-                                print("Face Recognition");
+                                Navigator.of(context).pushNamed('/loginFace',
+                                    arguments: cameraDescription);
                               },
                               "Face Recognition",
                             ),

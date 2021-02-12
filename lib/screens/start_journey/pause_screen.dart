@@ -173,7 +173,7 @@ class _PauseScreenState extends State<PauseScreen> {
                       margin: EdgeInsets.only(top: 20),
                       child: SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(() {
+                        child: CustomElevatedButton(() {
                           Navigator.pop(context);
                         }, "Previous Page"),
                       ),

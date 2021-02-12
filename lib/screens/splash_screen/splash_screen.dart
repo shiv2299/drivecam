@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drivecam/services/user_api.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,7 +16,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   navigate() async {
-    Navigator.of(context).pushReplacementNamed("/login");
+    String route = "/login";
+    if (await UserApi().getUserId() != null) route = "/home";
+    Navigator.of(context).pushReplacementNamed(route);
   }
 
   @override

@@ -1,10 +1,10 @@
 import 'package:drivecam/resources/colors.dart';
 import 'package:flutter/material.dart';
 
-class ElevatedButton extends StatelessWidget {
+class CustomElevatedButton extends StatelessWidget {
   final Function onPress;
   final String text;
-  ElevatedButton(this.onPress, this.text);
+  CustomElevatedButton(this.onPress, this.text);
 
   @override
   Widget build(BuildContext context) {

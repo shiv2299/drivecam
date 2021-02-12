@@ -9,6 +9,7 @@ import 'package:drivecam/widgets/loading_dialog.dart';
 import 'package:drivecam/widgets/submit_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
@@ -28,6 +29,8 @@ class _LoginState extends State<Login> {
   DataBaseService _dataBaseService = DataBaseService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  static final FacebookLogin facebookSignIn = new FacebookLogin();
+  String _message = 'Log in/out by pressing the buttons below.';
   FirebaseUser _user;
   CameraDescription cameraDescription;
   login() async {
@@ -59,6 +62,65 @@ class _LoginState extends State<Login> {
         Fluttertoast.showToast(msg: "Something Went Wrong!");
       }
     }
+  }
+
+  Future<Null> singInWithFaceBook() async {
+    final FacebookLoginResult result = await facebookSignIn.logIn(['email']);
+
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        final FacebookAccessToken accessToken = result.accessToken;
+        _showMessage('''
+         Logged in!
+         Token: ${accessToken.token}
+         User id: ${accessToken.userId}
+         Expires: ${accessToken.expires}
+         Permissions: ${accessToken.permissions}
+         Declined permissions: ${accessToken.declinedPermissions}
+         ''');
+        print('''
+         Logged in!
+         Token: ${accessToken.token}
+         User id: ${accessToken.userId}
+         Expires: ${accessToken.expires}
+         Permissions: ${accessToken.permissions[1]}
+         Declined permissions: ${accessToken.declinedPermissions}''');
+        //    try {
+        //   UserApi userApi = UserApi();
+        //   Response response = await userApi.getUserByEmail(currentUser.email);
+        //   print(response.data);
+        //   if (response.data["status"]) {
+        //     userApi.storeUserId(response.data["data"]["_id"]);
+        //     Navigator.of(context).pushReplacementNamed("/home");
+        //   } else {
+        //     Navigator.of(context).pushNamed("/register",
+        //         arguments: {"cd": cameraDescription, "user": currentUser});
+        //   }
+        // } catch (e) {
+        //   print(e);
+        //   Fluttertoast.showToast(msg: "Something Went Wrong!");
+        // }
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        _showMessage('Login cancelled by the user.');
+        break;
+      case FacebookLoginStatus.error:
+        _showMessage('Something went wrong with the login process.\n'
+            'Here\'s the error Facebook gave us: ${result.errorMessage}');
+        break;
+    }
+  }
+  // FaceBook logout
+  // Future<Null> _logOut() async {
+  //   await facebookSignIn.logOut();
+  //   _showMessage('Logged out.');
+  // }
+
+  void _showMessage(String message) {
+    setState(() {
+      _message = message;
+    });
+    Fluttertoast.showToast(msg: _message);
   }
 
   void signInWithGoogle(context) async {
@@ -249,6 +311,21 @@ class _LoginState extends State<Login> {
                                 signInWithGoogle(context);
                               },
                               "Sign in with Google",
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(bottom: 10, top: 10),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(right: 10, left: 10),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: SubmitButton(
+                              () {
+                                singInWithFaceBook();
+                              },
+                              "Sign in with Facebook",
                             ),
                           ),
                         ),

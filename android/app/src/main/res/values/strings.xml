@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">drivecam</string>
+    <string name="facebook_app_id">3941268585904199</string>
+    <string name="fb_login_protocol_scheme">fb3941268585904199</string>
+</resources>
